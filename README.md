@@ -19,9 +19,5 @@ Enter number of days in settings.
 
 If you experience issues with this plugin or need assistance please use the issue tracker by clicking issues above.
 
-## Additional Plugins
-
-Check out my other plugins [here](https://plugins.octoprint.org/by_author/#jneilliii)
-
 ## Credits
 This plugin forked from [Octoprint-TimelapsePurger](https://github.com/jneilliii/OctoPrint-TimelapsePurger) by [jneilliii](https://github.com/jneilliii)
