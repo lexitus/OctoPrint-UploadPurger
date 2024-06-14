@@ -24,7 +24,7 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
     def on_event(self, event, payload):
         if event in self.monitored_events:
             if self._settings.get_int(["cut_off_length"]) > 0:
-                self._logger.info(f"Purging uploads older than {self._settings.get(["cut_off_length"])} days.")
+                self._logger.info(f"Purging uploads older than {self._settings.get(['cut_off_length'])} days.")
                 path = self._settings.getBaseFolder("uploads")
                 now = time.time()
                 for file in os.listdir(path):
