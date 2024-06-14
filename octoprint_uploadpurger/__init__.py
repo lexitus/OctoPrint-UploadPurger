@@ -29,13 +29,16 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
                 now = time.time()
                 for file in os.listdir(path):
                     file = os.path.join(path, file)
-                    if os.stat(file).st_mtime < now - self._settings.get_int(["cut_off_length"]) * 86400:
-                        if os.path.isfile(file):
-                            self._logger.info("Deleting {}.".format(file))
-                            # try:
-                            #     os.remove(file)
-                            # except Exception:
-                            #     self._logger.error("There was an error removing the file {}".format(file))
+                    try:
+                        if os.stat(file).st_mtime < now - self._settings.get_int(["cut_off_length"]) * 86400:
+                            if os.path.isfile(file):
+                                self._logger.info("Deleting {}.".format(file))
+                                # try:
+                                #     os.remove(file)
+                                # except Exception:
+                                #     self._logger.error("There was an error removing the file {}".format(file))
+                    except FileNotFoundError:
+                        pass
 
     # ~~ SettingsPlugin mixin
 
