@@ -8,7 +8,7 @@ import os
 import time
 
 
-class TimelapsepurgerPlugin(octoprint.plugin.SettingsPlugin,
+class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
                             octoprint.plugin.AssetPlugin,
                             octoprint.plugin.TemplatePlugin,
                             octoprint.plugin.EventHandlerPlugin,
