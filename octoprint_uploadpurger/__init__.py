@@ -3,9 +3,11 @@ from __future__ import absolute_import
 
 
 import octoprint.plugin
+import octoprint.filemanager.storage
 from octoprint.events import Events
 import os
 import time
+import datetime
 
 
 class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
@@ -17,6 +19,8 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
 
     def __init__(self):
         self.monitored_events = [Events.UPLOAD, Events.STARTUP]
+        self.upload_folder = self._settings.getBaseFolder("uploads")
+        self.lfs = octoprint.filemanager.storage.LocalFileStorage(self.upload_folder)
 
     def on_after_startup(self):
         pass
@@ -24,19 +28,25 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
     def on_event(self, event, payload):
         if event in self.monitored_events:
             if self._settings.get_int(["cut_off_length"]) > 0:
-                self._logger.info(f"Purging uploads older than {self._settings.get(['cut_off_length'])} days.")
-                path = self._settings.getBaseFolder("uploads")
+                self._logger.info(f"Purging uploads unused for {self._settings.get(['cut_off_length'])} days or more.")
                 now = time.time()
-                for file in os.listdir(path):
-                    file = os.path.join(path, file)
+                for k,v in self.lfs.list_files().items() if v.type == "machinecode":
                     try:
-                        if os.stat(file).st_mtime < now - self._settings.get_int(["cut_off_length"]) * 86400:
-                            if os.path.isfile(file):
-                                self._logger.info(f"Deleting {file}.")
-                                try:
-                                    os.remove(file)
-                                except OSError as error:
-                                    self._logger.error(f"There was an error removing the file {file}: {error}")
+                        metadata = get_metadata(v.path)
+
+                        if "history" in metadata:
+                            last_used = metadata.history.timestamp
+                            self._logger.info(f"Last used =  {last_used} (history)")
+                        else:
+                            last_used = os.stat(os.path.join(self.upload_folder,v.path)).st_mtime
+                            self._logger.info(f"Last used =  {last_used} (stat)")
+
+                        if last_used < now - self._settings.get_int(["cut_off_length"]) * 86400:
+                            self._logger.info(f"Deleting {v.path}.")
+                            try:
+                                # self.lfs.remove_file(v.path)
+                            except OSError as error:
+                                self._logger.error(f"There was an error removing the file {file}: {error}")
                     except FileNotFoundError:
                         pass
 
