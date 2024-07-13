@@ -39,7 +39,7 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
                         metadata = lfs.get_metadata(v["path"])
 
                         if "history" in metadata:
-                            last_used = metadata.history.timestamp
+                            last_used = metadata["history"]["timestamp"]
                             self._logger.info(f"Last used =  {last_used} (history)")
                         else:
                             last_used = os.stat(os.path.join(upload_folder,v.path)).st_mtime
