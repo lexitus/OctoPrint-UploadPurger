@@ -19,18 +19,19 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
 
     def __init__(self):
         self.monitored_events = [Events.UPLOAD, Events.STARTUP]
-        self.upload_folder = self._settings.getBaseFolder("uploads")
-        self.lfs = octoprint.filemanager.storage.LocalFileStorage(self.upload_folder)
 
     def on_after_startup(self):
         pass
 
     def on_event(self, event, payload):
+        upload_folder = self._settings.getBaseFolder("uploads")
+        lfs = octoprint.filemanager.storage.LocalFileStorage(upload_folder)
+
         if event in self.monitored_events:
             if self._settings.get_int(["cut_off_length"]) > 0:
                 self._logger.info(f"Purging uploads unused for {self._settings.get(['cut_off_length'])} days or more.")
                 now = time.time()
-                for k,v in self.lfs.list_files().items():
+                for k,v in lfs.list_files().items():
                     if v.type != "machinecode":
                         continue
 
@@ -41,14 +42,14 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
                             last_used = metadata.history.timestamp
                             self._logger.info(f"Last used =  {last_used} (history)")
                         else:
-                            last_used = os.stat(os.path.join(self.upload_folder,v.path)).st_mtime
+                            last_used = os.stat(os.path.join(upload_folder,v.path)).st_mtime
                             self._logger.info(f"Last used =  {last_used} (stat)")
 
                         if last_used < now - self._settings.get_int(["cut_off_length"]) * 86400:
                             self._logger.info(f"Deleting {v.path}.")
                             try:
                                 pass
-                                # self.lfs.remove_file(v.path)
+                                # lfs.remove_file(v.path)
                             except OSError as error:
                                 self._logger.error(f"There was an error removing the file {file}: {error}")
                     except FileNotFoundError:
