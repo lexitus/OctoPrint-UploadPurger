@@ -32,7 +32,7 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
                 self._logger.info(f"Purging uploads unused for {self._settings.get(['cut_off_length'])} days or more.")
                 now = time.time()
                 for k,v in lfs.list_files().items():
-                    if v.type != "machinecode":
+                    if "type" not in v or v.type != "machinecode":
                         continue
 
                     try:
