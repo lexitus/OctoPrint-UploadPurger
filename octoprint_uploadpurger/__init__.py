@@ -36,7 +36,7 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
                         continue
 
                     try:
-                        metadata = get_metadata(v.path)
+                        metadata = lfs.get_metadata(v.path)
 
                         if "history" in metadata:
                             last_used = metadata.history.timestamp
