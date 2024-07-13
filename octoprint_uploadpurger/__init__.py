@@ -30,7 +30,10 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
             if self._settings.get_int(["cut_off_length"]) > 0:
                 self._logger.info(f"Purging uploads unused for {self._settings.get(['cut_off_length'])} days or more.")
                 now = time.time()
-                for k,v in self.lfs.list_files().items() if v.type == "machinecode":
+                for k,v in self.lfs.list_files().items():
+                    if v.type != "machinecode":
+                        continue
+
                     try:
                         metadata = get_metadata(v.path)
 
@@ -44,6 +47,7 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
                         if last_used < now - self._settings.get_int(["cut_off_length"]) * 86400:
                             self._logger.info(f"Deleting {v.path}.")
                             try:
+                                pass
                                 # self.lfs.remove_file(v.path)
                             except OSError as error:
                                 self._logger.error(f"There was an error removing the file {file}: {error}")
