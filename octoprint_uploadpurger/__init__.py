@@ -6,8 +6,7 @@ import octoprint.plugin
 import octoprint.filemanager.storage
 from octoprint.events import Events
 import os
-import time
-import datetime
+from datetime import datetime as dt, timedelta
 
 
 class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
@@ -30,26 +29,28 @@ class UploadpurgerPlugin(octoprint.plugin.SettingsPlugin,
         if event in self.monitored_events:
             if self._settings.get_int(["cut_off_length"]) > 0:
                 self._logger.info(f"Purging uploads unused for {self._settings.get(['cut_off_length'])} days or more.")
-                now = time.time()
                 for k,v in lfs.list_files().items():
                     if "type" not in v or v["type"] != "machinecode":
                         continue
 
                     try:
                         metadata = lfs.get_metadata(v["path"])
+                        self._logger.info(f"Considering file {v['path']}")
+                        #self._logger.info(f"Metadata = {metadata}")
 
                         if "history" in metadata:
-                            last_used = metadata["history"]["timestamp"]
-                            self._logger.info(f"Last used =  {last_used} (history)")
+                            last_used = max(item['timestamp'] for item in metadata['history'])
                         else:
-                            last_used = os.stat(os.path.join(upload_folder,v.path)).st_mtime
-                            self._logger.info(f"Last used =  {last_used} (stat)")
+                            last_used = os.stat(os.path.join(upload_folder,v["path"])).st_mtime
+ 
+                        last_used = dt.fromtimestamp(last_used)
 
-                        if last_used < now - self._settings.get_int(["cut_off_length"]) * 86400:
-                            self._logger.info(f"Deleting {v.path}.")
+                        self._logger.info(f"Last used =  {last_used}")
+
+                        if last_used < dt.now() - timedelta(days = self._settings.get_int(["cut_off_length"])):
+                            self._logger.info(f"Deleting {v['path']}.")
                             try:
-                                pass
-                                # lfs.remove_file(v.path)
+                                lfs.remove_file(v["path"])
                             except OSError as error:
                                 self._logger.error(f"There was an error removing the file {file}: {error}")
                     except FileNotFoundError:
